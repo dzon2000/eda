@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "OrderCreated",
+  "namespace": "io.pw.orders.v1",
+  "fields": [
+    { "name": "orderId", "type": "string" },
+    { "name": "customerId", "type": "string" },
+    { "name": "amount", "type": "double" },
+    { "name": "createdAt", "type": "string" }
+  ]
+}
