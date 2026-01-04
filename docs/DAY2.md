@@ -64,11 +64,22 @@ Why BACKWARD:
 - New consumers can read old events
 - Allows safe evolution
 
-## Day 1 issues resolved
+## Go development
+
+First we will ire Go producer with Schema Registry.
+
+Dependencies:
+
+```shell
+go get github.com/segmentio/kafka-go
+go get github.com/linkedin/goavro/v2
+```
+
+# Day 1 issues resolved
 
 So it seems like the group creation was broken because the auto creation of kafka internal topics (`__consumer_offsets`) was not successful. Why? because apparently my cluster settings was wrong for such a simple setup (1 node). 
 
-### ChatGPT explanation:
+## ChatGPT explanation:
 
 Kafka tries to create __consumer_offsets with:
 
@@ -101,7 +112,7 @@ KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
 With that, the group creation and internal topics works just fine.
 
-### Links
+## Links
 
 - [Kafka Consumer Groups and Offsets](https://axual.com/blog/kafka-consumer-groups-and-offsets-what-you-need-to-know)
 - [Kafka Auto Offset](https://quix.io/blog/kafka-auto-offset-reset-use-cases-and-pitfalls)
