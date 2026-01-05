@@ -6,6 +6,7 @@
     { "name": "orderId", "type": "string" },
     { "name": "customerId", "type": "string" },
     { "name": "amount", "type": "double" },
-    { "name": "createdAt", "type": "string" }
+    { "name": "createdAt", "type": "string" },
+    { "name": "discount", "type": ["null", "double"], "default": null }
   ]
 }

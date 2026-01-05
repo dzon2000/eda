@@ -66,7 +66,7 @@ Why BACKWARD:
 
 ## Go development
 
-First we will ire Go producer with Schema Registry.
+First we will wire Go producer with Schema Registry.
 
 Dependencies:
 
@@ -74,6 +74,12 @@ Dependencies:
 go get github.com/segmentio/kafka-go
 go get github.com/linkedin/goavro/v2
 ```
+
+Source code available at `services/producer/main.go`
+
+## Schema updates
+
+Schema registry will handle versioning and enforce compatibility while remote repository will own intent and review. For that ADR was created to document the change while repository only contains the latest version of the schema.
 
 # Day 1 issues resolved
 
