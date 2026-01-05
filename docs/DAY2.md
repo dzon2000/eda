@@ -66,6 +66,8 @@ Why BACKWARD:
 
 ## Go development
 
+### Producer 
+
 First we will wire Go producer with Schema Registry.
 
 Dependencies:
@@ -76,6 +78,20 @@ go get github.com/linkedin/goavro/v2
 ```
 
 Source code available at `services/producer/main.go`
+
+For discount added we must use below statement. This is because it is defined in schema as optional: null or double.
+
+```go
+"discount": map[string]interface{}{
+    "double": 10.0,
+},
+```
+
+### Consumer
+
+Consumer waits for new messages in Kafka topic and then deserializes the message.
+
+Source code available at `services/consumer/main.go`
 
 ## Schema updates
 

@@ -23,7 +23,7 @@ type schemaResponse struct {
 	ID int `json:"id"`
 }
 
-const schemaID = 1
+const schemaID = 2
 
 func main() {
 	fmt.Println("Producer Service")
@@ -42,6 +42,9 @@ func main() {
 		"customerId": "cust-42",
 		"amount":     99.99,
 		"createdAt":  time.Now().UTC().Format(time.RFC3339),
+		"discount": map[string]interface{}{
+			"double": 10.0,
+		},
 	}
 
 	value := createAvroMessage(codec, nativeMessage)
