@@ -3,6 +3,7 @@
   "name": "OrderCreated",
   "namespace": "io.pw.orders.v1",
   "fields": [
+    { "name": "eventId", "type": "string" },
     { "name": "orderId", "type": "string" },
     { "name": "customerId", "type": "string" },
     { "name": "amount", "type": "double" },
