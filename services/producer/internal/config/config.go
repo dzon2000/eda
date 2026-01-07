@@ -8,14 +8,16 @@ import (
 )
 
 type Config struct {
-	Kafka       KafkaConfig
-	Schema      SchemaConfig
-	Environment string
+	Kafka          KafkaConfig
+	Schema         SchemaConfig
+	Environment    string
+	ProducerConfig ProducerConfig
 }
 
 type KafkaConfig struct {
-	Brokers []string
-	Topic   string
+	Brokers    []string
+	Topic      string
+	MaxRetries int
 }
 
 type SchemaConfig struct {
@@ -23,16 +25,24 @@ type SchemaConfig struct {
 	SchemaID int
 }
 
+type ProducerConfig struct {
+	MaxRetries int
+}
+
 func Load() (*Config, error) {
 	cfg := &Config{
 		Environment: getEnv("ENVIRONMENT", "development"),
 		Kafka: KafkaConfig{
-			Brokers: getBrokersFromEnv(),
-			Topic:   getEnv("KAFKA_TOPIC", "orders.v1"),
+			Brokers:    getBrokersFromEnv(),
+			Topic:      getEnv("KAFKA_TOPIC", "orders.v1"),
+			MaxRetries: getEnvAsInt("KAFKA_MAX_RETRIES", 10),
 		},
 		Schema: SchemaConfig{
 			FilePath: getEnv("SCHEMA_FILE_PATH", "order_created.avsc"),
 			SchemaID: getEnvAsInt("SCHEMA_ID", 2),
+		},
+		ProducerConfig: ProducerConfig{
+			MaxRetries: getEnvAsInt("PRODUCER_MAX_RETRIES", 5),
 		},
 	}
 

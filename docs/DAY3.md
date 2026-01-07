@@ -20,3 +20,31 @@ Idempotent consumers:
 
 - Build application-level idempotency
     - Side note `segmentio/kafka-go` does not support idempotency
+
+## Producer
+
+What can happen:
+- Broker receives message
+- Producer times out
+- Producer retries
+- Broker receives duplicate
+
+This is expected behavior and should not cause any application failures.
+
+> Accept duplicates by design
+
+## Consumer
+
+Uses the internal synchronization mechanism. For Day3 it's simple in memory synchronized Map. For production will use Redis for example.
+
+Committing message is related to offsets. There are different approaches like:
+- Per-message commit
+- Batch commit
+
+For Day3, per-message commit is implemented but it might have implications in production (commit overhead).
+
+> Committing a message refers to the consumer acknowledging that it has successfully processed a message (or batch of messages) up to a specific offset in a topic partition. This action records the last processed offset in Kafka's internal log, ensuring the consumer group can resume from that exact point after a restart or failure, preventing reprocessing or message loss
+
+## Notes
+
+Idempotency is client-side - no need to do any changes on a broker

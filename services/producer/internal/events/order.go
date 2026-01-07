@@ -3,9 +3,12 @@ package events
 import (
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type OrderCreated struct {
+	EventID    string
 	OrderID    string
 	CustomerID string
 	Amount     float64
@@ -16,6 +19,7 @@ type OrderCreated struct {
 // ToMap converts to format expected by Avro encoder
 func (o *OrderCreated) ToMap() map[string]interface{} {
 	data := map[string]interface{}{
+		"eventId":    o.EventID,
 		"orderId":    o.OrderID,
 		"customerId": o.CustomerID,
 		"amount":     o.Amount,
@@ -39,10 +43,19 @@ func NewOrderCreatedEvent(orderID, customerID string, amount float64, discount *
 		return nil, fmt.Errorf("amount must be positive")
 	}
 	return &OrderCreated{
+		EventID:    generateEventID(),
 		OrderID:    orderID,
 		CustomerID: customerID,
 		Amount:     amount,
 		CreatedAt:  time.Now().UTC().Format(time.RFC3339),
 		Discount:   discount,
 	}, nil
+}
+
+func generateEventID() string {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return uuid.New().String()
+	}
+	return id.String()
 }

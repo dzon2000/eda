@@ -38,9 +38,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = producer.Send(context.Background(), []byte(event.OrderID), value)
-	if err != nil {
-		log.Fatal(err)
+	for i := 0; i < cfg.ProducerConfig.MaxRetries; i++ {
+		err = producer.Send(context.Background(), []byte(event.OrderID), value)
+		if err == nil {
+			break // Can be improved
+		}
 	}
 
 	log.Println("Message sent successfully")

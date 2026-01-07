@@ -4,6 +4,7 @@ package schema
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/dzon2000/eda/consumer/internal/config"
@@ -61,6 +62,7 @@ func (r *Registry) GetCodec(schemaID int) (*goavro.Codec, error) {
 }
 
 func (r *Registry) Deserialize(schemaID int, payload []byte) (interface{}, error) {
+	log.Printf("Deserializing message with schema ID: %d", schemaID)
 	codec, err := r.GetCodec(schemaID)
 	if err != nil {
 		return nil, err

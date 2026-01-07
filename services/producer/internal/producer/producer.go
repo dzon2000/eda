@@ -14,9 +14,11 @@ type Producer struct {
 
 func New(cfg config.KafkaConfig) *Producer {
 	writer := kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  cfg.Brokers,
-		Topic:    cfg.Topic,
-		Balancer: &kafka.LeastBytes{},
+		Brokers:      cfg.Brokers,
+		Topic:        cfg.Topic,
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: int(kafka.RequireAll),
+		MaxAttempts:  cfg.MaxRetries,
 	})
 	return &Producer{
 		writer: writer,
