@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/dzon2000/eda/producer/internal/config"
@@ -11,9 +12,24 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var orderID string
+var customerID string
+var amount float64
+var discount float64
+
+func init() {
+	flag.StringVar(&orderID, "order-id", "", "Order ID for the event")
+	flag.StringVar(&customerID, "customer-id", "", "Customer ID for the event")
+	flag.Float64Var(&amount, "amount", 0.0, "Amount for the event")
+	flag.Float64Var(&discount, "discount", 0.0, "Discount for the event")
+	flag.Parse()
+	_ = godotenv.Load(".env.development")
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Producer Service")
+	log.Printf("Creating event for order ID: %s, customer ID: %s, amount: %.2f, discount: %.2f", orderID, customerID, amount, discount)
 	_ = godotenv.Load(".env.development")
 	cfg, err := config.Load()
 	if err != nil {
@@ -30,8 +46,7 @@ func main() {
 	producer := producer.New(cfg.Kafka)
 	defer producer.Close()
 
-	discount := 10.0
-	event, _ := events.NewOrderCreatedEvent("456", "cost-999", 199.00, &discount)
+	event, _ := events.NewOrderCreatedEvent(orderID, customerID, amount, &discount)
 
 	value, err := encoder.Encode(event.ToMap())
 	if err != nil {
