@@ -57,3 +57,15 @@ What happens on startup
 3. Rebalances are normal
 4. Slow consumers cause rebalances
 5. Offsets are group-scoped state
+
+> Kafka assumes consumers are fast pollers, not long workers.
+
+**Never let business logic block the poll loop.**
+
+General rule: Poll fast, process async.
+
+```golang
+msg := FetchMessage()
+go process(msg)
+Commit(msg)
+```
