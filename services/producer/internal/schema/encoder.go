@@ -31,9 +31,7 @@ func (e *Encoder) Encode(data map[string]interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode to avro: %w", err)
 	}
-
 	buf := new(bytes.Buffer)
-
 	// Magic byte
 	buf.WriteByte(0)
 	// Schema ID (big-endian)
