@@ -28,11 +28,12 @@ func New(kafkaConfig config.KafkaConfig) *Consumer {
 
 func (c *Consumer) Start(registry *schema.Registry) error {
 	c.reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  c.kafkaConfig.Brokers,
-		Topic:    c.kafkaConfig.Topic,
-		GroupID:  c.kafkaConfig.GroupID,
-		MinBytes: c.kafkaConfig.MinBytes,
-		MaxBytes: c.kafkaConfig.MaxBytes,
+		Brokers:        c.kafkaConfig.Brokers,
+		Topic:          c.kafkaConfig.Topic,
+		GroupID:        c.kafkaConfig.GroupID,
+		MinBytes:       c.kafkaConfig.MinBytes,
+		MaxBytes:       c.kafkaConfig.MaxBytes,
+		CommitInterval: 0, // manual commits
 	})
 	for {
 		ctx := context.Background()
