@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "OrderDLQEvent",
+  "namespace": "io.pw.orders.dlq",
+  "fields": [
+    { "name": "eventId", "type": ["null", "string"], "default": null },
+    { "name": "originalTopic", "type": "string" },
+    { "name": "partition", "type": "int" },
+    { "name": "offset", "type": "long" },
+    { "name": "errorType", "type": "string" },
+    { "name": "errorMessage", "type": "string" },
+    { "name": "payload", "type": "bytes" },
+    { "name": "failedAt", "type": "string" }
+  ]
+}
