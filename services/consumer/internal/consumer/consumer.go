@@ -67,6 +67,9 @@ func (c *Consumer) Stop() error {
 }
 
 func (c *Consumer) handleMessage(registry *schema.Registry, value []byte) (*events.OrderCreatedEvent, error) {
+	if 1 == 1 {
+		return nil, fmt.Errorf("simulated error for testing retries")
+	}
 	if len(value) < 5 {
 		return nil, fmt.Errorf("invalid message")
 	}
