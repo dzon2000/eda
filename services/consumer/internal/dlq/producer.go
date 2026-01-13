@@ -3,9 +3,9 @@ package dlq
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/dzon2000/eda/consumer/internal/config"
+	"github.com/dzon2000/eda/consumer/internal/events"
 	"github.com/dzon2000/eda/consumer/internal/schema"
 	"github.com/segmentio/kafka-go"
 )
@@ -40,18 +40,17 @@ func (p *KafkaDLQProducer) Send(
 	cause error,
 ) error {
 
-	dlqEvent := map[string]interface{}{
-		"eventId":       map[string]interface{}{"string": extractEventID(msg.Value)},
-		"originalTopic": msg.Topic,
-		"partition":     msg.Partition,
-		"offset":        msg.Offset,
-		"errorType":     classifyError(cause),
-		"errorMessage":  cause.Error(),
-		"payload":       msg.Value,
-		"failedAt":      time.Now().UTC().Format(time.RFC3339),
-	}
+	event := events.NewOrderDLQEvent(
+		extractEventID(msg.Value),
+		msg.Topic,
+		msg.Partition,
+		msg.Offset,
+		classifyError(cause),
+		cause.Error(),
+		msg.Value,
+	)
 
-	value, err := p.encoder.Encode(dlqEvent)
+	value, err := p.encoder.Encode(event.ToMap())
 	if err != nil {
 		return err
 	}
