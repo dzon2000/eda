@@ -41,7 +41,7 @@ func (p *KafkaDLQProducer) Send(
 ) error {
 
 	dlqEvent := map[string]interface{}{
-		"eventId":       extractEventID(msg.Value),
+		"eventId":       map[string]interface{}{"string": extractEventID(msg.Value)},
 		"originalTopic": msg.Topic,
 		"partition":     msg.Partition,
 		"offset":        msg.Offset,
