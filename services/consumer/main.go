@@ -13,14 +13,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func initializeDLQProducer(cfg *config.Config, registry *schema.Registry) (dlq.DLQProducer, error) {
+func initializeDLQProducer(cfg *config.Config, encoder *schema.Encoder) (dlq.DLQProducer, error) {
+	dlqProducer := dlq.NewKafkaDLQProducer(cfg.Kafka, encoder)
+	return dlqProducer, nil
+}
+
+func initializeEncoder(registry *schema.Registry, cfg *config.Config) *schema.Encoder {
 	dlqCodec, err := registry.GetCodec(cfg.SchemaRegistry.DLQSchemaID)
 	if err != nil {
 		log.Fatalf("Failed to get codec from schema registry: %v", err)
 	}
 	encoder, _ := schema.NewEncoder(dlqCodec, cfg.SchemaRegistry.DLQSchemaID)
-	dlqProducer := dlq.NewKafkaDLQProducer(cfg.Kafka, encoder)
-	return dlqProducer, nil
+	return encoder
 }
 
 func main() {
@@ -36,7 +40,8 @@ func main() {
 	log.Printf("Kafka brokers: %v", cfg.Kafka.Brokers)
 	log.Printf("Topic: %s", cfg.Kafka.Topic)
 	registry := schema.New(cfg.SchemaRegistry)
-	dlqProducer, err := initializeDLQProducer(cfg, registry)
+	dlqEncoder := initializeEncoder(registry, cfg)
+	dlqProducer, err := initializeDLQProducer(cfg, dlqEncoder)
 	if err != nil {
 		log.Fatalf("Failed to initialize DLQ producer: %v", err)
 	}

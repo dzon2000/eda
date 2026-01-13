@@ -54,7 +54,7 @@ func (c *Consumer) Start() error {
 }
 
 func (c *Consumer) processMessage(ctx context.Context, msg kafka.Message) error {
-	orderEvent, err := c.handleMessage(c.registry, msg.Value)
+	orderEvent, err := c.handleMessage(msg.Value)
 	if err != nil {
 		return c.handleProcessingError(ctx, msg, err)
 	}
@@ -93,10 +93,7 @@ func (c *Consumer) Stop() error {
 	return c.reader.Close()
 }
 
-func (c *Consumer) handleMessage(registry *schema.Registry, value []byte) (*events.OrderCreatedEvent, error) {
-	if 1 == 1 {
-		return nil, fmt.Errorf("simulated error for testing retries")
-	}
+func (c *Consumer) handleMessage(value []byte) (*events.OrderCreatedEvent, error) {
 	if len(value) < 5 {
 		return nil, fmt.Errorf("invalid message")
 	}
@@ -112,7 +109,7 @@ func (c *Consumer) handleMessage(registry *schema.Registry, value []byte) (*even
 	// 3. Avro payload
 	avroPayload := value[5:]
 
-	codec, err := registry.GetCodec(schemaID)
+	codec, err := c.registry.GetCodec(schemaID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codec for schema ID %d: %w", schemaID, err)
 	}
