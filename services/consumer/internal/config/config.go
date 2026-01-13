@@ -15,31 +15,37 @@ type Config struct {
 }
 
 type KafkaConfig struct {
-	Brokers  []string
-	Topic    string
-	GroupID  string
-	MinBytes int
-	MaxBytes int
+	Brokers    []string
+	Topic      string
+	GroupID    string
+	MinBytes   int
+	MaxBytes   int
+	DLQTopic   string
+	MaxRetries int
 }
 
 type SchemaRegistryConfig struct {
-	URL     string
-	Timeout time.Duration
+	URL         string
+	Timeout     time.Duration
+	DLQSchemaID int
 }
 
 func Load() (*Config, error) {
 	cfg := &Config{
 		Environment: getEnv("ENVIRONMENT", "development"),
 		Kafka: KafkaConfig{
-			Brokers:  getBrokersFromEnv(),
-			Topic:    getEnv("KAFKA_TOPIC", "orders.v1"),
-			GroupID:  getEnv("KAFKA_GROUP_ID", "orders-consumer"),
-			MinBytes: getEnvAsInt("KAFKA_MIN_BYTES", 1000),
-			MaxBytes: getEnvAsInt("KAFKA_MAX_BYTES", 10000000),
+			Brokers:    getBrokersFromEnv(),
+			Topic:      getEnv("KAFKA_TOPIC", "orders.v1"),
+			GroupID:    getEnv("KAFKA_GROUP_ID", "orders-consumer"),
+			MinBytes:   getEnvAsInt("KAFKA_MIN_BYTES", 1000),
+			MaxBytes:   getEnvAsInt("KAFKA_MAX_BYTES", 10000000),
+			DLQTopic:   getEnv("KAFKA_DLQ_TOPIC", "orders.dlq"),
+			MaxRetries: getEnvAsInt("KAFKA_MAX_RETRIES", 5),
 		},
 		SchemaRegistry: SchemaRegistryConfig{
-			URL:     getEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081"),
-			Timeout: getEnvAsDuration("SCHEMA_REGISTRY_TIMEOUT", 10*time.Second),
+			URL:         getEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081"),
+			Timeout:     getEnvAsDuration("SCHEMA_REGISTRY_TIMEOUT", 10*time.Second),
+			DLQSchemaID: getEnvAsInt("SCHEMA_REGISTRY_DLQ_SCHEMA_ID", 67),
 		},
 	}
 

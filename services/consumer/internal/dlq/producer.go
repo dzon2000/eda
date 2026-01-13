@@ -2,19 +2,36 @@ package dlq
 
 import (
 	"context"
+	"strings"
 	"time"
 
-	"github.com/linkedin/goavro/v2"
+	"github.com/dzon2000/eda/consumer/internal/config"
+	"github.com/dzon2000/eda/consumer/internal/schema"
 	"github.com/segmentio/kafka-go"
 )
 
 type DLQProducer interface {
 	Send(ctx context.Context, msg kafka.Message, err error) error
+	Close() error
 }
 
 type KafkaDLQProducer struct {
 	writer  *kafka.Writer
-	encoder *goavro.Encoder
+	encoder *schema.Encoder
+}
+
+func NewKafkaDLQProducer(kafkaConfig config.KafkaConfig, encoder *schema.Encoder) *KafkaDLQProducer {
+	writer := kafka.NewWriter(kafka.WriterConfig{
+		Brokers:      kafkaConfig.Brokers,
+		Topic:        kafkaConfig.DLQTopic,
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: int(kafka.RequireAll),
+		MaxAttempts:  kafkaConfig.MaxRetries,
+	})
+	return &KafkaDLQProducer{
+		writer:  writer,
+		encoder: encoder,
+	}
 }
 
 func (p *KafkaDLQProducer) Send(
@@ -45,12 +62,26 @@ func (p *KafkaDLQProducer) Send(
 	})
 }
 
+func (p *KafkaDLQProducer) Close() error {
+	return p.writer.Close()
+}
+
 func extractEventID(value []byte) string {
-	// Placeholder implementation
+	if len(value) < 5 {
+		return "malformed-message"
+	}
 	return "unknown-event-id"
 }
 
 func classifyError(err error) string {
-	// Placeholder implementation
-	return "processing_error"
+	switch {
+	case strings.Contains(err.Error(), "schema"):
+		return "schema_error"
+	case strings.Contains(err.Error(), "deserialize"):
+		return "deserialization_error"
+	case strings.Contains(err.Error(), "invalid message"):
+		return "invalid_message"
+	default:
+		return "processing_error"
+	}
 }
