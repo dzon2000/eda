@@ -14,3 +14,10 @@ messages for later inspection, debugging, and potential reprocessing.
 - Implement DLQ producer
 - Implement mechanism to handle processing failures in original consumer
 
+# Producer reliability
+
+Design a producer that:
+- Never loses events
+- Survives crashes
+- Is auditable
+- Scales operationally
