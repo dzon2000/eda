@@ -21,3 +21,33 @@ Design a producer that:
 - Survives crashes
 - Is auditable
 - Scales operationally
+
+> Store events in the same transaction as business data
+
+E.g. use DB to store events, and poll to send to Kafka
+
+Example:
+
+```sql
+BEGIN;
+
+INSERT INTO orders (...);
+
+INSERT INTO outbox_events (
+    id,
+    aggregate_type,
+    aggregate_id,
+    event_type,
+    payload,
+    schema_version
+) VALUES (
+    gen_random_uuid(),
+    'order',
+    :order_id,
+    'OrderCreated',
+    :payload::jsonb,
+    2
+);
+
+COMMIT;
+```
