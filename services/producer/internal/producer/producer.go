@@ -2,8 +2,10 @@ package producer
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/dzon2000/eda/producer/internal/config"
+	"github.com/dzon2000/eda/producer/internal/events"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -19,6 +21,7 @@ func New(cfg config.KafkaConfig) *Producer {
 		Balancer:     &kafka.LeastBytes{},
 		RequiredAcks: int(kafka.RequireAll),
 		MaxAttempts:  cfg.MaxRetries,
+		Async:        false,
 	})
 	return &Producer{
 		writer: writer,
@@ -26,10 +29,15 @@ func New(cfg config.KafkaConfig) *Producer {
 	}
 }
 
-func (p *Producer) Send(ctx context.Context, key, value []byte) error {
+func (p *Producer) Send(ctx context.Context, event events.OutboxEvent, avroBytes []byte) error {
 	return p.writer.WriteMessages(ctx, kafka.Message{
-		Key:   key,
-		Value: value,
+		Key:   []byte(event.ID.String()),
+		Value: avroBytes,
+		Headers: []kafka.Header{
+			{Key: "event_id", Value: []byte(event.ID.String())},
+			{Key: "event_type", Value: []byte(event.EventType)},
+			{Key: "schema_version", Value: []byte(strconv.Itoa(event.SchemaVersion))},
+		},
 	})
 }
 

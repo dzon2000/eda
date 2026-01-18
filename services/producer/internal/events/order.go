@@ -8,12 +8,12 @@ import (
 )
 
 type OrderCreated struct {
-	EventID    string
-	OrderID    string
-	CustomerID string
-	Amount     float64
-	CreatedAt  string
-	Discount   *float64 // nullable
+	EventID    string   `json:"event_id"`
+	OrderID    string   `json:"order_id"`
+	CustomerID string   `json:"customer_id"`
+	Amount     float64  `json:"amount"`
+	Discount   *float64 `json:"discount,omitempty"`
+	CreatedAt  string   `json:"created_at"`
 }
 
 // ToMap converts to format expected by Avro encoder
