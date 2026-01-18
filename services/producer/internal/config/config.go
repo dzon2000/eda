@@ -12,6 +12,7 @@ type Config struct {
 	Schema         SchemaConfig
 	Environment    string
 	ProducerConfig ProducerConfig
+	DB             DBConfig
 }
 
 type KafkaConfig struct {
@@ -20,9 +21,19 @@ type KafkaConfig struct {
 	MaxRetries int
 }
 
+type DBConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBName   string
+}
+
 type SchemaConfig struct {
 	FilePath string // Path to .avsc file
 	SchemaID int
+	URL      string
+	Timeout  string
 }
 
 type ProducerConfig struct {
@@ -37,9 +48,18 @@ func Load() (*Config, error) {
 			Topic:      getEnv("KAFKA_TOPIC", "orders.v1"),
 			MaxRetries: getEnvAsInt("KAFKA_MAX_RETRIES", 10),
 		},
+		DB: DBConfig{
+			Host:     getEnv("DB_HOST", "localhost"),
+			Port:     getEnvAsInt("DB_PORT", 5432),
+			User:     getEnv("DB_USER", "postgres"),
+			Password: getEnv("DB_PASSWORD", "password"),
+			DBName:   getEnv("DB_NAME", "producer_db"),
+		},
 		Schema: SchemaConfig{
-			FilePath: getEnv("SCHEMA_FILE_PATH", "order_created.avsc"),
-			SchemaID: getEnvAsInt("SCHEMA_ID", 2),
+			FilePath: getEnv("SCHEMA_REGISTRY_FILE_PATH", "order_created.avsc"),
+			SchemaID: getEnvAsInt("SCHEMA_REGISTRY_ID", 3),
+			URL:      getEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081"),
+			Timeout:  getEnv("SCHEMA_REGISTRY_TIMEOUT", "10s"),
 		},
 		ProducerConfig: ProducerConfig{
 			MaxRetries: getEnvAsInt("PRODUCER_MAX_RETRIES", 5),

@@ -2,63 +2,65 @@ package main
 
 import (
 	"context"
-	"flag"
+	"database/sql"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/dzon2000/eda/producer/internal/config"
-	"github.com/dzon2000/eda/producer/internal/events"
-	"github.com/dzon2000/eda/producer/internal/producer"
-	"github.com/dzon2000/eda/producer/internal/schema"
+	"github.com/dzon2000/eda/producer/internal/db"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 )
-
-var orderID string
-var customerID string
-var amount float64
-var discount float64
-
-func init() {
-	flag.StringVar(&orderID, "order-id", "", "Order ID for the event")
-	flag.StringVar(&customerID, "customer-id", "", "Customer ID for the event")
-	flag.Float64Var(&amount, "amount", 0.0, "Amount for the event")
-	flag.Float64Var(&discount, "discount", 0.0, "Discount for the event")
-	flag.Parse()
-	_ = godotenv.Load(".env.development")
-}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Producer Service")
-	log.Printf("Creating event for order ID: %s, customer ID: %s, amount: %.2f, discount: %.2f", orderID, customerID, amount, discount)
 	_ = godotenv.Load(".env.development")
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
-	schemaContent, err := schema.NewRegistry(cfg.Schema).LoadSchemaFromFile()
-	if err != nil {
-		log.Fatal(err)
-	}
-	encoder, err := schema.NewEncoder(schemaContent, cfg.Schema.SchemaID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	producer := producer.New(cfg.Kafka)
-	defer producer.Close()
-
-	event, _ := events.NewOrderCreatedEvent(orderID, customerID, amount, &discount)
-
-	value, err := encoder.Encode(event.ToMap())
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		cfg.DB.User,
+		cfg.DB.Password,
+		cfg.DB.Host,
+		cfg.DB.Port,
+		cfg.DB.DBName,
+	)
+	dbPool, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for i := 0; i < cfg.ProducerConfig.MaxRetries; i++ {
-		err = producer.Send(context.Background(), []byte(event.OrderID), value)
-		if err == nil {
-			break // Can be improved
-		}
+	dbPool.SetMaxOpenConns(20)
+	dbPool.SetMaxIdleConns(5)
+	dbPool.SetConnMaxLifetime(time.Hour)
+	// schemaRegistry := schema.NewRegistry(cfg.Schema)
+
+	outboxRepo := db.NewOutboxRepository(dbPool)
+
+	tx, err := dbPool.BeginTx(context.Background(), &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer tx.Rollback()
+	events, err := outboxRepo.FetchPending(context.Background(), tx, 10)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Fetched %d pending events from outbox", len(events))
+	for _, event := range events {
+		log.Printf("Outbox Event: %+v", event)
+	}
+	// for i := 0; i < cfg.ProducerConfig.MaxRetries; i++ {
+	// 	err = producer.Send(context.Background(), []byte(event.OrderID), value)
+	// 	if err == nil {
+	// 		break // Can be improved
+	// 	}
+	// }
 
 	log.Println("Message sent successfully")
 }

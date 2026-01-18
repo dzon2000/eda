@@ -13,12 +13,7 @@ type Encoder struct {
 	schemaID int
 }
 
-func NewEncoder(schema string, schemaID int) (*Encoder, error) {
-	codec, err := goavro.NewCodec(schema)
-	if err != nil {
-		return nil, err
-	}
-
+func NewEncoder(codec *goavro.Codec, schemaID int) (*Encoder, error) {
 	return &Encoder{
 		codec:    codec,
 		schemaID: schemaID,
