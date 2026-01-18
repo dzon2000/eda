@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/dzon2000/eda/producer/internal/events"
+	"github.com/google/uuid"
 )
 
 type OutboxRepository struct {
@@ -50,4 +51,30 @@ func (r *OutboxRepository) FetchPending(
 		eventsList = append(eventsList, event)
 	}
 	return eventsList, rows.Err()
+}
+
+func (r *OutboxRepository) MarkSent(
+	ctx context.Context,
+	tx *sql.Tx,
+	eventID uuid.UUID,
+) error {
+	_, err := tx.ExecContext(ctx, `
+		UPDATE outbox_events
+		SET status = 'PUBLISHED', published_at = NOW()
+		WHERE id = $1
+	`, eventID)
+	return err
+}
+func (r *OutboxRepository) MarkError(
+	ctx context.Context,
+	tx *sql.Tx,
+	eventID uuid.UUID,
+	cause error,
+) error {
+	_, err := tx.ExecContext(ctx, `
+		UPDATE outbox_events
+		SET status = 'ERROR', last_error = $2, updated_at = NOW()
+		WHERE id = $1
+	`, eventID, cause.Error())
+	return err
 }
