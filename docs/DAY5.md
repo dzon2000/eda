@@ -51,3 +51,18 @@ INSERT INTO outbox_events (
 
 COMMIT;
 ```
+
+### Outbox pattern
+
+A polling publisher that reads pending events from a DB outbox table and publishes them to Kafka with exactly-once semantics. This decouples event production from database transactions and provides guaranteed delivery.
+
+**Key Flow:**
+
+1. BEGIN transaction
+2. SELECT pending events FOR UPDATE SKIP LOCKED
+3. For each event:
+   - Load Avro codec from Schema Registry
+   - Encode using goavro
+   - Send to Kafka topic
+   - UPDATE status = 'SENT' OR 'ERROR'
+4. COMMIT transaction
