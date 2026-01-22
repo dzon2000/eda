@@ -1,7 +1,17 @@
-package order
+package main
 
-import "fmt"
+import (
+	"log"
+	"net/http"
+
+	"github.com/dzon2000/eda/order/internal/web"
+)
 
 func main() {
-	fmt.Println("Hello")
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: web.NewHandler().Router(),
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

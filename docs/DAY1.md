@@ -54,4 +54,4 @@ kafka-console-consumer.sh \
 
 ## Final thoughts
 
-I need to have a closer look to partitions, offsets and groups. For some reason consumer didn't process any message until I used explicit `--partition 0` switch. This does not make sense to me as what if the actual parition is not 0? As far I found out it should be managed by using groups but for some reason the group was not created and thus the consumer didn't process any messages.
+I need to have a closer look to partitions, offsets and groups. For some reason consumer didn't process any message until I used explicit `--partition 0` switch. This does not make sense to me as what if the actual partition is not 0? As far I found out it should be managed by using groups but for some reason the group was not created and thus the consumer didn't process any messages.

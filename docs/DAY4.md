@@ -54,8 +54,8 @@ What happens on startup
 
 1. Consumer count ≤ partition count
 2. GroupID change = new application
-3. Rebalances are normal
-4. Slow consumers cause rebalances
+3. Re-balances are normal
+4. Slow consumers cause re-balances
 5. Offsets are group-scoped state
 
 > Kafka assumes consumers are fast pollers, not long workers.
