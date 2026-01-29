@@ -26,8 +26,6 @@ func (h *Handler) Router() http.Handler {
 }
 
 func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-
 	var req payload.CreateOrderRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
