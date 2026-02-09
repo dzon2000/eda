@@ -14,4 +14,3 @@ Order Service:
 - persists orders
 - emits OrderCreated (outbox publisher)
 - does **NOT** handle payments or fulfillment
-
